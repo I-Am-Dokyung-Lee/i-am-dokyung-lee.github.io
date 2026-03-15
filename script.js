@@ -85,6 +85,65 @@ document.querySelectorAll(
     revealObserver.observe(el);
 });
 
+// ========== Lightbox Gallery ==========
+(function() {
+    const lightbox = document.getElementById('lightbox');
+    const lbImg = document.getElementById('lb-img');
+    const lbCounter = document.getElementById('lb-counter');
+    let images = [];
+    let currentIdx = 0;
+
+    function show(idx) {
+        currentIdx = idx;
+        lbImg.style.opacity = '0';
+        setTimeout(() => {
+            lbImg.src = images[idx];
+            lbImg.onload = () => { lbImg.style.opacity = '1'; };
+        }, 100);
+        lbCounter.textContent = (idx + 1) + ' / ' + images.length;
+    }
+
+    function open(gallery, startIdx) {
+        images = gallery;
+        document.body.style.overflow = 'hidden';
+        lightbox.classList.add('active');
+        show(startIdx || 0);
+    }
+
+    function close() {
+        lightbox.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    document.querySelectorAll('.project-gallery').forEach(el => {
+        el.addEventListener('click', () => {
+            const gallery = JSON.parse(el.dataset.gallery);
+            open(gallery, 0);
+        });
+    });
+
+    lightbox.querySelector('.lb-close').addEventListener('click', close);
+    lightbox.querySelector('.lb-prev').addEventListener('click', () => {
+        show((currentIdx - 1 + images.length) % images.length);
+    });
+    lightbox.querySelector('.lb-next').addEventListener('click', () => {
+        show((currentIdx + 1) % images.length);
+    });
+
+    // Close only on background click, not on buttons or image
+    lightbox.addEventListener('click', e => {
+        if (e.target === lightbox || e.target === lightbox.querySelector('.lb-content')) close();
+    });
+    lbImg.addEventListener('click', e => e.stopPropagation());
+
+    document.addEventListener('keydown', e => {
+        if (!lightbox.classList.contains('active')) return;
+        if (e.key === 'Escape') close();
+        if (e.key === 'ArrowLeft') show((currentIdx - 1 + images.length) % images.length);
+        if (e.key === 'ArrowRight') show((currentIdx + 1) % images.length);
+    });
+})();
+
 // ========== Hero Typing Effect ==========
 (function() {
     const el = document.getElementById('hero-tagline');
